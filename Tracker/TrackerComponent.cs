@@ -9,11 +9,6 @@ using Grasshopper.Kernel.Parameters;
 using Rhino.Geometry;
 using NatNetML;
 
-// In order to load the result of this wizard, you will also need to
-// add the output bin/ folder of this project to the list of loaded
-// folder in Grasshopper.
-// You can use the _GrasshopperDeveloperSettings Rhino command for that.
-
 namespace Tracker
 {
     public class TrackerComponent : GH_Component
@@ -34,23 +29,23 @@ namespace Tracker
         {
         }
 
-        /*  [NatNet] Network connection configuration    */
+        //  [NatNet] Network connection configuration
         private static NatNetClientML mNatNet;    // The client instance
         private static string mStrLocalIP = "127.0.0.1";   // Local IP address (string)
         private static string mStrServerIP = "127.0.0.1";  // Server IP address (string)
         private static ConnectionType mConnectionType = ConnectionType.Multicast; // Multicast or Unicast mode
 
-        /*  List for saving each of datadescriptors */
+        //  List for saving each of the data descriptors
         private static List<DataDescriptor> mDataDescriptor = new List<DataDescriptor>();
 
-        /*  Lists and Hashtables for saving data descriptions   */
+        //  Lists and Hashtables for saving data descriptions
         public static Hashtable mHtSkelRBs = new Hashtable();
         public static List<MarkerSet> mMarkerSet = new List<MarkerSet>();
         public static List<RigidBody> mRigidBodies = new List<RigidBody>();
         public static List<Skeleton> mSkeletons = new List<Skeleton>();
         public static List<ForcePlate> mForcePlates = new List<ForcePlate>();
 
-        /*  boolean value for detecting change in asset */
+        //  Boolean value for detecting change in assset
         private static bool mAssetChanged = false;
 
         private static bool connectionConfirmed = false;
@@ -81,6 +76,7 @@ namespace Tracker
             pManager.AddBooleanParameter("Reset", "Reset", "Reset the streaming module.", GH_ParamAccess.item, false);
             pManager.AddTextParameter("Local IP", "Local IP", "IP address for the receiver.", GH_ParamAccess.item, "127.0.0.1");
             pManager.AddTextParameter("Server IP", "Server IP", "IP address for the server.", GH_ParamAccess.item, "127.0.0.1");
+            // Frame rate variable input either here or in the menu.
         }
 
         /// <summary>
@@ -148,7 +144,6 @@ namespace Tracker
                 log.Add("Success: Data Port Connected.");
 
                 counter++;
-                ExpireSolution(true);
             }
             else if (activate && connectionConfirmed) // If the service is activated and we have a confirmed connection to the server.
             {
@@ -176,7 +171,6 @@ namespace Tracker
                 mNatNet.OnFrameReady -= fetchFrameData;
 
                 counter++;
-                ExpireSolution(true);
             }
             else if (!activate)
             {
@@ -193,7 +187,6 @@ namespace Tracker
                 log.Clear();
                 log.Add("Service stopped. Activate module to begin streaming.");
             }
-            else { }
 
             DA.SetDataList(0, log);
             DA.SetDataList(1, mPoints);
@@ -201,6 +194,8 @@ namespace Tracker
             DA.SetDataList(3, rigidBodyNames);
             DA.SetDataList(4, rigidBodyPos);
             DA.SetDataList(5, rigidBodyQuat);
+
+            ExpireSolution(true);
         }
 
         /// <summary>
@@ -221,7 +216,6 @@ namespace Tracker
         /// <param name="client">The NatNet client instance</param>
         static void fetchFrameData(NatNetML.FrameOfMocapData data, NatNetML.NatNetClientML client)
         {
-
             /*  Exception handler for cases where assets are added or removed.
                 Data description is re-obtained in the main function so that contents
                 in the frame handler is kept minimal. */
@@ -286,8 +280,8 @@ namespace Tracker
 
                     for (int j = 0; j < data.nRigidBodies; j++)
                     {
-                        NatNetML.RigidBody rb = mRigidBodies[i];                // Saved rigid body descriptions
-                        NatNetML.RigidBodyData rbData = data.RigidBodies[j];    // Received rigid body descriptions
+                        RigidBody rb = mRigidBodies[i];                // Saved rigid body descriptions
+                        RigidBodyData rbData = data.RigidBodies[j];    // Received rigid body descriptions
 
                         if (rbData.Tracked == true)
                         {
@@ -302,7 +296,7 @@ namespace Tracker
                             // Rigid Body Euler Orientation
                             //float[] quat = new float[4] { rbData.qx, rbData.qy, rbData.qz, rbData.qw };
 
-                            // Attempting to normalise the rotation notation to fit with robot programming (WXYZ).
+                            // Attempt to normalise the rotation notation to fit with robot programming (WXYZ).
                             rigidBodyQuat.Add(Math.Round(rbData.qw, 6));
                             rigidBodyQuat.Add(Math.Round(rbData.qx, 6));
                             rigidBodyQuat.Add(Math.Round(rbData.qy, 6));
@@ -394,21 +388,23 @@ namespace Tracker
 
         static void connectToServer()
         {
-            /*  [NatNet] Instantiate the client object  */
-            mNatNet = new NatNetML.NatNetClientML();
+            //  [NatNet] Instantiate the client object
+            mNatNet = new NatNetClientML();
 
-            /*  [NatNet] Checking verions of the NatNet SDK library  */
+            //  [NatNet] Checking verions of the NatNet SDK library
             int[] verNatNet = new int[4];           // Saving NatNet SDK version number
             verNatNet = mNatNet.NatNetVersion();
             // Console.WriteLine("NatNet SDK Version: {0}.{1}.{2}.{3}", verNatNet[0], verNatNet[1], verNatNet[2], verNatNet[3]);
 
-            /*  [NatNet] Connecting to the Server    */
+            //  [NatNet] Connecting to the Server
             // Console.WriteLine("\nConnecting...\n\tLocal IP address: {0}\n\tServer IP Address: {1}\n\n", mStrLocalIP, mStrServerIP);
 
             NatNetClientML.ConnectParams connectParams = new NatNetClientML.ConnectParams();
+
             connectParams.ConnectionType = mConnectionType;
             connectParams.ServerAddress = mStrServerIP;
             connectParams.LocalAddress = mStrLocalIP;
+
             mNatNet.Connect(connectParams);
         }
 
@@ -528,13 +524,13 @@ namespace Tracker
         protected override void AppendAdditionalComponentMenuItems(System.Windows.Forms.ToolStripDropDown menu)
         {
             ToolStripMenuItem rBody = Menu_AppendItem(menu, "Rigid Body", Menu_rBodyClick, true, RigidBody); // Append the item to the menu.
-            rBody.ToolTipText = "When checked, surface will stream Rigid Body data."; // Specifically assign a tooltip text to the menu item.
+            rBody.ToolTipText = "When checked, component will stream Rigid Body data."; // Specifically assign a tooltip text to the menu item.
 
             ToolStripMenuItem skeleton = Menu_AppendItem(menu, "Skeleton", Menu_skeletonClick, true, Skeleton);
-            skeleton.ToolTipText = "When checked, surface will stream Skeleton data.";
+            skeleton.ToolTipText = "When checked, component will stream Skeleton data.";
 
             ToolStripMenuItem fPlate = Menu_AppendItem(menu, "Force Plate", Menu_fPlateClick, true, ForcePlate);
-            fPlate.ToolTipText = "When checked, surface will stream Force Plate data.";
+            fPlate.ToolTipText = "When checked, component will stream Force Plate data.";
         }
 
         private void Menu_rBodyClick(object sender, EventArgs e)
@@ -558,23 +554,14 @@ namespace Tracker
             ExpireSolution(true);
         }
 
-        /// <summary>
-        /// Provides an Icon for every component that will be visible in the User Interface.
-        /// Icons need to be 24x24 pixels.
-        /// </summary>
         protected override System.Drawing.Bitmap Icon
         {
             get
             {
-                return Resources.Vision;
+                return null;
             }
         }
 
-        /// <summary>
-        /// Each component must have a unique Guid to identify it. 
-        /// It is vital this Guid doesn't change otherwise old ghx files 
-        /// that use the old ID will partially fail during loading.
-        /// </summary>
         public override Guid ComponentGuid
         {
             get { return new Guid("5EF49154-2EDB-403C-85AE-6FCCDF109FB2"); }
