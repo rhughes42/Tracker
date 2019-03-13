@@ -18,7 +18,7 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\</OutputPath>
+    <OutputPath>..\..\..\..\..\AppData\Roaming\Grasshopper\Libraries\Tracker\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
@@ -31,9 +31,16 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x64'">
+    <OutputPath>..\..\..\..\..\AppData\Roaming\Grasshopper\Libraries\Tracker\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|x86'">
+    <OutputPath>..\..\..\..\..\AppData\Roaming\Grasshopper\Libraries\Tracker\</OutputPath>
+  </PropertyGroup>
   <ItemGroup>
-    <Reference Include="NatNetML">
-      <HintPath>..\..\..\..\AppData\Roaming\Grasshopper\Libraries\Axis\NatNetML.dll</HintPath>
+    <Reference Include="NatNetML, Version=3.0.6516.17879, Culture=neutral, processorArchitecture=AMD64">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>lib\x64\NatNetML.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -64,8 +71,27 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Utlities.cs" />
   </ItemGroup>
+  <ItemGroup>
+    <WCFMetadata Include="Connected Services\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ContentWithTargetPath Include="lib\x64\NatNetLib.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </ContentWithTargetPath>
+    <Content Include="lib\x64\NatNetML.dll" />
+    <Content Include="lib\x64\NatNetML.xml" />
+    <Content Include="lib\x86\NatNetLib.dll" />
+    <Content Include="lib\x86\NatNetML.dll" />
+    <Content Include="lib\x86\NatNetML.xml" />
+  </ItemGroup>  
+  <ItemGroup>
+    <ContentWithTargetPath Include="lib\x64\NatNetLib.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>NatNetLib.dll</TargetPath>
+    </ContentWithTargetPath>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it.
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">
   </Target>
@@ -84,5 +110,6 @@ Erase "$(TargetPath)"</PostBuildEvent>
     <StartArguments>
     </StartArguments>
     <StartAction>Program</StartAction>
+    <PlatformTarget>x64</PlatformTarget>
   </PropertyGroup>
 </Project>
