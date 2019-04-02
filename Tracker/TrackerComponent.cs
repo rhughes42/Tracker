@@ -188,12 +188,21 @@ namespace Tracker
                 log.Add("Service stopped. Activate module to begin streaming.");
             }
 
-            DA.SetDataList(0, log);
-            DA.SetDataList(1, mPoints);
-            DA.SetDataList(2, mLabels);
-            DA.SetDataList(3, rigidBodyNames);
-            DA.SetDataList(4, rigidBodyPos);
-            DA.SetDataList(5, rigidBodyQuat);
+            try
+            {
+                DA.SetDataList(0, log);
+                DA.SetDataList(1, mPoints);
+                DA.SetDataList(2, mLabels);
+                DA.SetDataList(3, rigidBodyNames);
+                DA.SetDataList(4, rigidBodyPos);
+                DA.SetDataList(5, rigidBodyQuat);
+            }
+            catch (Exception)
+            {
+
+                //throw;
+            }
+
 
             ExpireSolution(true);
         }
