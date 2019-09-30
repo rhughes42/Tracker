@@ -66,6 +66,10 @@ namespace Tracker
         private static List<string> rigidBodyNames = new List<string>();
         private static List<double> rigidBodyPos = new List<double>();
         private static List<double> rigidBodyQuat = new List<double>();
+        private static List<Plane> rigidBodyPlanes = new List<Plane>();
+
+        //SetUP Confic
+        private static bool yUp = false;
 
         /// <summary>
         /// Registers all the input parameters for this component.
@@ -88,8 +92,9 @@ namespace Tracker
             pManager.AddPointParameter("Markers", "Markers", "Generic, unlabelled marker data.", GH_ParamAccess.list);
             pManager.AddTextParameter("Labels", "Labels", "Marker labels.", GH_ParamAccess.list);
             pManager.AddTextParameter("RB Name", "RB Name", "List of Rigid Body name data.", GH_ParamAccess.list);
-            pManager.AddTextParameter("RB Position", "RB Pos", "List of Rigid Body position data.", GH_ParamAccess.list);
-            pManager.AddTextParameter("RB Quaternion", "RB Quat", "List of Rigid Body quaternion data.", GH_ParamAccess.list);
+            pManager.AddPlaneParameter("BR Plane", "BR Plane", "List of planes assosieated with the Ridgid Bodys", GH_ParamAccess.list);
+            //pManager.AddTextParameter("RB Position", "RB Pos", "List of Rigid Body position data.", GH_ParamAccess.list);
+            //pManager.AddTextParameter("RB Quaternion", "RB Quat", "List of Rigid Body quaternion data.", GH_ParamAccess.list);
         }
 
         /// <summary>
@@ -190,12 +195,13 @@ namespace Tracker
 
             try
             {
-                DA.SetDataList(0, log);
-                DA.SetDataList(1, mPoints);
-                DA.SetDataList(2, mLabels);
-                DA.SetDataList(3, rigidBodyNames);
-                DA.SetDataList(4, rigidBodyPos);
-                DA.SetDataList(5, rigidBodyQuat);
+                DA.SetDataList("Status", log);
+                DA.SetDataList("Markers", mPoints);
+                DA.SetDataList("Labels", mLabels);
+                DA.SetDataList("RB Name", rigidBodyNames);
+                //DA.SetDataList("RB Position", rigidBodyPos);
+                //DA.SetDataList("RB Quaternion", rigidBodyQuat);
+                DA.SetDataList("BR Plane", rigidBodyPlanes );
             }
             catch (Exception)
             {
@@ -281,6 +287,7 @@ namespace Tracker
                 rigidBodyNames.Clear();
                 rigidBodyPos.Clear();
                 rigidBodyQuat.Clear();
+                rigidBodyPlanes.Clear();
 
                 /*  Parsing Rigid Body Frame Data   */
                 for (int i = 0; i < mRigidBodies.Count; i++)
@@ -320,6 +327,34 @@ namespace Tracker
 
                             Console.WriteLine("\t\tori ({0:N3}, {1:N3}, {2:N3})", xrot, yrot, zrot);
                             */
+
+
+                            // Create Plane
+                            Plane rbPlane = new Plane();
+                            Quaternion rbQuat = new Quaternion(Math.Round(rbData.qw, 6), Math.Round(rbData.qx, 6), Math.Round(rbData.qy, 6), Math.Round(rbData.qz, 6));
+                            rbQuat.GetRotation(out rbPlane);
+                            rbPlane.Origin = new Point3d(Math.Round(rbData.x, 4), Math.Round(rbData.y, 4), Math.Round(rbData.z, 4));
+
+                            //Scale from meter to milli meter
+                            rbPlane.Transform(Transform.Scale(new Point3d(0, 0, 0), 1000));
+
+                            Transform xformYup = new Transform();
+                            xformYup.M01 = xformYup.M02 = xformYup.M03 = xformYup.M10 = xformYup.M11 =xformYup.M13 = xformYup.M20 = xformYup.M22 = xformYup.M33 = xformYup.M30 = xformYup.M31 = xformYup.M32 = 0; 
+                            xformYup.M00 = xformYup.M21 = xformYup.M33 = 1;
+                            xformYup.M12 = -1;
+
+                            Transform xRotate = new Transform();
+                            xRotate.M00 = xRotate.M02 = xRotate.M03 = xRotate.M11 = xRotate.M12 = xRotate.M13 = xRotate.M20 = xRotate.M21 = xRotate.M33 = xRotate.M30 = xRotate.M31 = xRotate.M32 = 0;
+                            xRotate.M10 = xRotate.M22 = xRotate.M33 = 1;
+                            xRotate.M01 = -1;
+
+                            if (yUp) //Detect if Y is pointing up
+                            {
+                                rbPlane.Transform(xformYup);
+                            }
+
+                            rbPlane.Transform(xRotate);
+                            rigidBodyPlanes.Add(rbPlane);
                         }
                         else
                         {
@@ -532,6 +567,9 @@ namespace Tracker
         // The following functions append menu items and then handle the item clicked event.
         protected override void AppendAdditionalComponentMenuItems(System.Windows.Forms.ToolStripDropDown menu)
         {
+            ToolStripMenuItem cSystem = Menu_AppendItem(menu, "Y up", Menu_yUp, true, yUp);
+            cSystem.ToolTipText = "When checked, component will expect Y up";
+
             ToolStripMenuItem rBody = Menu_AppendItem(menu, "Rigid Body", Menu_rBodyClick, true, RigidBody); // Append the item to the menu.
             rBody.ToolTipText = "When checked, component will stream Rigid Body data."; // Specifically assign a tooltip text to the menu item.
 
@@ -540,6 +578,13 @@ namespace Tracker
 
             ToolStripMenuItem fPlate = Menu_AppendItem(menu, "Force Plate", Menu_fPlateClick, true, ForcePlate);
             fPlate.ToolTipText = "When checked, component will stream Force Plate data.";
+        }
+
+        private void Menu_yUp(object sender, EventArgs e)
+        {
+            RecordUndoEvent("Y Up");
+            yUp = !yUp;
+            ExpireSolution(true);
         }
 
         private void Menu_rBodyClick(object sender, EventArgs e)
@@ -567,7 +612,7 @@ namespace Tracker
         {
             get
             {
-                return null;
+                return Properties.Icons.Tracker;
             }
         }
 
