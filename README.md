@@ -3,6 +3,8 @@ A Grasshopper plugin for NaturalPoint's NatNet API. Supports real-time motion tr
 
 ## Dependencies
 
+## Installation
+
 ## Usage
 
-## Contributors
+### Contributors
