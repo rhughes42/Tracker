@@ -26,14 +26,14 @@ namespace Tracker
             get
             {
                 //Return a short string describing the purpose of this GHA library.
-                return "";
+                return "Supports real-time motion tracking with OptiTrack camera systems using NaturalPoint's NatNet API.";
             }
         }
         public override Guid Id
         {
             get
             {
-                return new Guid("ecb8ebae-3a61-4cc2-8f07-089555f0da3a");
+                return new Guid("CF473A4D-483F-4556-B3FA-91ED21096B82");
             }
         }
 
@@ -42,7 +42,7 @@ namespace Tracker
             get
             {
                 //Return a string identifying you or your company.
-                return "";
+                return "Axis Consulting";
             }
         }
         public override string AuthorContact
@@ -50,7 +50,7 @@ namespace Tracker
             get
             {
                 //Return a string representing your preferred contact details.
-                return "";
+                return "rhu@axisarch.tech";
             }
         }
     }
