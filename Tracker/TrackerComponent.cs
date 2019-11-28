@@ -13,13 +13,6 @@ namespace Tracker
 {
     public class TrackerComponent : GH_Component
     {
-        /// <summary>
-        /// Each implementation of GH_Component must provide a public 
-        /// constructor without any arguments.
-        /// Category represents the Tab in which the component will appear, 
-        /// Subcategory the panel. If you use non-existing tab or panel names, 
-        /// new tabs/panels will automatically be created.
-        /// </summary>
         public TrackerComponent()
           : base("OptiTrack Stream",
                 "OptiTrack Stream",
@@ -67,9 +60,6 @@ namespace Tracker
         private static List<double> rigidBodyPos = new List<double>();
         private static List<double> rigidBodyQuat = new List<double>();
 
-        /// <summary>
-        /// Registers all the input parameters for this component.
-        /// </summary>
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddBooleanParameter("Activate", "Activate", "Activate the streaming module.", GH_ParamAccess.item, false);
@@ -78,10 +68,7 @@ namespace Tracker
             pManager.AddTextParameter("Server IP", "Server IP", "IP address for the server.", GH_ParamAccess.item, "127.0.0.1");
             // Frame rate variable input either here or in the menu.
         }
-
-        /// <summary>
-        /// Registers all the output parameters for this component.
-        /// </summary>
+        
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
             pManager.AddTextParameter("Status", "Status", "Status of the streaming service.", GH_ParamAccess.list);
@@ -92,11 +79,6 @@ namespace Tracker
             pManager.AddTextParameter("RB Quaternion", "RB Quat", "List of Rigid Body quaternion data.", GH_ParamAccess.list);
         }
 
-        /// <summary>
-        /// This is the method that actually does the work.
-        /// </summary>
-        /// <param name="DA">The DA object can be used to retrieve data from input parameters and 
-        /// to store data in output parameters.</param>
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             bool activate = false;
@@ -564,7 +546,7 @@ namespace Tracker
 
         public override Guid ComponentGuid
         {
-            get { return new Guid("5EF49154-2EDB-403C-85AE-6FCCDF109FB2"); }
+            get { return new Guid("D1C724B2-FEB4-405E-9570-382F8FD553F8"); }
         }
     }
 }
